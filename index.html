@@ -101,4 +101,235 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px rgba(
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .court-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .court-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 標籤樣式 */
+        .court-badge {
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            align-self: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .court-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            color: #0f172a;
+        }
+
+        .court-info {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.4rem;
+        }
+
+        .court-tags {
+            margin-top: auto;
+            padding-top: 1.25rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .tag-light { background-color: #dcfce7; color: #166534; }
+        .tag-no-light { background-color: #fee2e2; color: #991b1b; }
+
+        /* 地圖導航按鈕 */
+        .map-btn {
+            display: block;
+            text-align: center;
+            background-color: #2563eb;
+            color: white;
+            padding: 0.7rem;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 1.25rem;
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .map-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* 找不到結果提示 */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            background: white;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        /* 頁尾 */
+        footer {
+            text-align: center;
+            padding: 2.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 5rem;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        /* 手機版 RWD 排版優化 */
+        @media (max-width: 640px) {
+            header h1 { font-size: 1.8rem; }
+            .filter-section { padding: 1rem; gap: 1rem; }
+            .filter-group { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏟️ 高雄市運動球場搜尋網</h1>
+        <p>整合開放資料 ✕ Google 地圖自動導航系統</p>
+    </header>
+
+    <div class="container">
+        <section class="filter-section">
+            <div class="filter-group">
+                <label for="searchName">🔍 搜尋行政區、球場名稱</label>
+                <input type="text" id="searchName" placeholder="例如：鳳山、左營、中央公園...">
+            </div>
+            <div class="filter-group">
+                <label for="filterType">🥎 運動項目</label>
+                <select id="filterType">
+                    <option value="all">全部項目</option>
+                    <option value="籃球">籃球場</option>
+                    <option value="羽球">羽球場</option>
+                    <option value="排球">排球場</option>
+                </select>
+            </div>
+        </section>
+
+        <main class="court-grid" id="courtGrid"></main>
+    </div>
+
+    <footer>
+        <p>© 2026 資訊課專案｜自動化 Google Maps 導航網頁示範</p>
+    </footer>
+
+    <script>
+        // 【高雄市運動球場原始資料清單】
+        const rawGovernmentData = [
+            // === 籃球場 ===
+            { name: "中央公園中正各類球場", addr: "高雄市前金區中華三路6號", type: "籃球", light: "Y" },
+            { name: "中正技擊館青少年籃球場", addr: "高雄市苓雅區中正一路96號", type: "籃球", light: "Y" },
+            { name: "凹子底森林公園籃球場", addr: "高雄市鼓山區神農路", type: "籃球", light: "Y" },
+            { name: "鳳山運動園區室外籃球場", addr: "高雄市鳳山區體育路65號", type: "籃球", light: "Y" },
+            { name: "楠梓坑口籃球場", addr: "高雄市楠梓區旗楠路", type: "籃球", light: "Y" },
+            { name: "新興公園溜冰暨籃球場", addr: "高雄市新興區民權一路", type: "籃球", light: "N" },
+            { name: "小港漢民公園籃球場", addr: "高雄市小港區漢民路", type: "籃球", light: "Y" },
+            
+            // === 羽球場 ===
+            { name: "鳳山運動園區羽球館", addr: "高雄市鳳山區立志街180號", type: "羽球", light: "Y" },
+            { name: "左營運動中心羽球館", addr: "高雄市左營區世運大道100號", type: "羽球", light: "Y" },
+            { name: "技擊館西區羽球場", addr: "高雄市苓雅區中正一路96號", type: "羽球", light: "Y" },
+            { name: "陽明高架橋下羽球場", addr: "高雄市三民區陽明路", type: "羽球", light: "Y" },
+            { name: "鼓山運動中心羽球場", addr: "高雄市鼓山區邊街", type: "羽球", light: "Y" },
+            
+            // === 排球場 ===
+            { name: "福誠高中排球場", addr: "高雄市鳳山區五甲三路176號", type: "排球", light: "Y" },
+            { name: "中正高工戶外排球場", addr: "高雄市前鎮區光華二路101號", type: "排球", light: "Y" },
+            { name: "高師大和平校區排球場", addr: "高雄市苓雅區和平一路116號", type: "排球", light: "Y" },
+            { name: "中山大學海景排球場", addr: "高雄市鼓山區蓮海路70號", type: "排球", light: "Y" },
+            { name: "美濃運動中心排球場", addr: "高雄市美濃區中正路", type: "排球", light: "N" }
+        ];
+
+        // 綁定網頁 HTML 元素
+        const courtGrid = document.getElementById('courtGrid');
+        const searchNameInput = document.getElementById('searchName');
+        const filterTypeSelect = document.getElementById('filterType');
+
+        // 核心功能：渲染球場卡片
+        function displayCourts(courts) {
+            if (!courtGrid) return;
+            courtGrid.innerHTML = ""; // 先清空畫面
+            
+            if (courts.length === 0) {
+                courtGrid.innerHTML = `<div class="no-results">🔍 找不到符合條件的球場，換個關鍵字試試看吧！</div>`;
+                return;
+            }
+
+            courts.forEach(court => {
+                // 已修正：移除多餘的數字 5，並改成正確的 Google 地圖萬用搜尋格式
+                const googleMapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(court.name + ' ' + court.addr)}`;
+                
+                const lightTag = court.light === "Y" ? '<span class="tag tag-light">💡 有夜間照明</span>' : '<span class="tag tag-no-light">🌙 無夜間照明</span>';
+
+                const html = `
+                    <div class="court-card">
+                        <div class="court-body">
+                            <span class="court-badge">${court.type}場</span>
+                            <div class="court-title">${court.name}</div>
+                            <div class="court-info">📍 <strong>地址：</strong>${court.addr}</div>
+                            <div class="court-tags">
+                                ${lightTag}
+                            </div>
+                            <a href="${googleMapSearchUrl}" target="_blank" class="map-btn">🗺️ 開啟 Google 地圖導航</a>
+                        </div>
+                    </div>
+                `;
+                courtGrid.innerHTML += html;
+            });
+        }
+
+        // 核心功能：前端即時篩選邏輯
+        function doFilter() {
+            const keyword = searchNameInput.value.toLowerCase().trim();
+            const type = filterTypeSelect.value;
+
+            const result = rawGovernmentData.filter(court => {
+                const matchKeyword = court.name.toLowerCase().includes(keyword) || court.addr.toLowerCase().includes(keyword);
+                const matchType = (type === 'all') || (court.type === type);
+                return matchKeyword && matchType;
+            });
+            
+            displayCourts(result);
+        }
+
+        // 確保網頁載入完成後才執行 JavaScript
+        document.addEventListener("DOMContentLoaded", function() {
+            if (searchNameInput && filterTypeSelect) {
+                searchNameInput.addEventListener('input', doFilter);
+                filterTypeSelect.addEventListener('change', doFilter);
+            }
+            displayCourts(rawGovernmentData);
+        });
+    </script>
+</body>
+</html>
