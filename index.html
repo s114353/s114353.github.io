@@ -1,11 +1,390 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset = "utf-8">
-    <title>my web</title>
-    <link rel="icon" href="icon.png">
-  </head>
-  <body>
-      hello world
-  </body>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動滋動滋｜全台運動球場搜尋網</title>
+    <style>
+        /* 全域樣式美化 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "微軟正黑體";
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 頂部橫幅 */
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* 搜尋與篩選控制面板 */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            background-color: #f8fafc;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: #3b82f6;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* 球場卡片網格佈局 */
+        .court-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* 單個卡片樣式 */
+        .court-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+        }
+
+        .court-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+        }
+
+        .court-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .court-type-badge {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            align-self: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .court-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            color: #1e293b;
+        }
+
+        .court-info {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* 標籤區 */
+        .court-tags {
+            margin-top: auto;
+            padding-top: 1.25rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .tag-light { background-color: #dcfce7; color: #15803d; }
+        .tag-no-light { background-color: #fee2e2; color: #b91c1c; }
+        .tag-free { background-color: #fef3c7; color: #b45309; }
+        .tag-charge { background-color: #f1f5f9; color: #475569; }
+
+        /* 按鈕樣式 */
+        .map-btn {
+            display: block;
+            text-align: center;
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 1.25rem;
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .map-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* 找不到結果提示 */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            background: white;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        /* 頁尾 */
+        footer {
+            text-align: center;
+            padding: 2.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 5rem;
+            background-color: #fff;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* RWD 手機版排版優化 */
+        @media (max-width: 640px) {
+            header h1 { font-size: 1.8rem; }
+            .filter-section { padding: 1rem; gap: 1rem; }
+            .filter-group { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏟️ 全台運動球場搜尋網</h1>
+        <p>快速篩選、尋找適合你的運動揮汗好去處</p>
+    </header>
+
+    <div class="container">
+        <section class="filter-section">
+            <div class="filter-group">
+                <label for="searchName">🔍 關鍵字搜尋</label>
+                <input type="text" id="searchName" placeholder="輸入球場名稱、城市或地址...">
+            </div>
+            <div class="filter-group">
+                <label for="filterType">🏀 運動項目</label>
+                <select id="filterType">
+                    <option value="all">全部項目</option>
+                    <option value="籃球">籃球場</option>
+                    <option value="羽球">羽球場</option>
+                    <option value="網球">網球場</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterLight">💡 夜間照明</label>
+                <select id="filterLight">
+                    <option value="all">不限</option>
+                    <option value="yes">有燈光設備</option>
+                    <option value="no">無燈光設備</option>
+                </select>
+            </div>
+        </section>
+
+        <main class="court-grid" id="courtGrid"></main>
+    </div>
+
+    <footer>
+        <p>© 2026 資訊課網頁設計專案｜由 GitHub Pages 免費託管提供</p>
+    </footer>
+
+    <script>
+        // 【球場資料庫】未來你可以自行在這裡複製貼上、修改資料！
+        const courtData = [
+            {
+                name: "大安森林公園籃球場",
+                type: "籃球",
+                city: "台北市",
+                address: "台北市大安區新生南路二段1號",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "中正運動中心羽球場",
+                type: "羽球",
+                city: "台北市",
+                address: "台北市中正區信義路一段1號",
+                hasLight: true,
+                isFree: false
+            },
+            {
+                name: "逢甲大學頂樓網球場",
+                type: "網球",
+                city: "台中市",
+                address: "台中市西屯區文華路100號",
+                hasLight: false,
+                isFree: false
+            },
+            {
+                name: "高雄中央公園籃球場",
+                type: "籃球",
+                city: "高雄市",
+                address: "高雄市前金區中華三路6號",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "青埔運動公園網球場",
+                type: "網球",
+                city: "桃園市",
+                address: "桃園市中壢區文康路",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "市民大道羽球場",
+                type: "羽球",
+                city: "台北市",
+                address: "台北市大安區市民大道三段",
+                hasLight: false,
+                isFree: true
+            }
+        ];
+
+        // 綁定 HTML 元素
+        const courtGrid = document.getElementById('courtGrid');
+        const searchNameInput = document.getElementById('searchName');
+        const filterTypeSelect = document.getElementById('filterType');
+        const filterLightSelect = document.getElementById('filterLight');
+
+        // 渲染畫面的函式
+        function renderCourts(courts) {
+            courtGrid.innerHTML = ""; 
+
+            if (courts.length === 0) {
+                courtGrid.innerHTML = `<div class="no-results">😢 找不到符合條件的球場，換個關鍵字試試看吧！</div>`;
+                return;
+            }
+
+            courts.forEach(court => {
+                // 自動產生 Google 地圖搜尋連結
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(court.name + ' ' + court.address)}`;
+                
+                const lightTag = court.hasLight ? '<span class="tag tag-light">💡 有夜間照明</span>' : '<span class="tag tag-no-light">🌙 無夜間照明</span>';
+                const freeTag = court.isFree ? '<span class="tag tag-free">🪙 免費入場</span>' : '<span class="tag tag-charge">💳 需收費/預約</span>';
+
+                const cardHtml = `
+                    <div class="court-card">
+                        <div class="court-body">
+                            <span class="court-type-badge">${court.type}</span>
+                            <div class="court-title">${court.name}</div>
+                            <div class="court-info">📍 <strong>地址：</strong>${court.address}</div>
+                            <div class="court-info">🏙️ <strong>城市：</strong>${court.city}</div>
+                            <div class="court-tags">
+                                ${lightTag}
+                                ${freeTag}
+                            </div>
+                            <a href="${mapUrl}" target="_blank" class="map-btn">🗺️ 開啟 Google 地圖導航</a>
+                        </div>
+                    </div>
+                `;
+                courtGrid.innerHTML += cardHtml;
+            });
+        }
+
+        // 篩選核心邏輯
+        function filterCourts() {
+            const searchText = searchNameInput.value.toLowerCase().trim();
+            const selectedType = filterTypeSelect.value;
+            const selectedLight = filterLightSelect.value;
+
+            const filtered = courtData.filter(court => {
+                // 1. 關鍵字比對名稱、地址或城市
+                const matchesSearch = court.name.toLowerCase().includes(searchText) || 
+                                      court.address.toLowerCase().includes(searchText) ||
+                                      court.city.toLowerCase().includes(searchText);
+                
+                // 2. 運動項目比對
+                const matchesType = (selectedType === 'all') || (court.type === selectedType);
+                
+                // 3. 燈光設備比對
+                let matchesLight = true;
+                if (selectedLight === 'yes') matchesLight = court.hasLight === true;
+                if (selectedLight === 'no') matchesLight = court.hasLight === false;
+
+                return matchesSearch && matchesType && matchesLight;
+            });
+
+            renderCourts(filtered);
+        }
+
+        // 監聽使用者操作
+        searchNameInput.addEventListener('input', filterCourts);
+        filterTypeSelect.addEventListener('change', filterCourts);
+        filterLightSelect.addEventListener('change', filterCourts);
+
+        // 網頁開啟時首次載入
+        window.onload = function() {
+            renderCourts(courtData);
+        };
+    </script>
+</body>
 </html>
