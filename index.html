@@ -237,6 +237,7 @@
                     <option value="籃球">籃球場</option>
                     <option value="羽球">羽球場</option>
                     <option value="網球">網球場</option>
+                    <option value="排球">排球場</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -258,33 +259,11 @@
 
     <script>
         // 【球場資料庫】未來你可以自行在這裡複製貼上、修改資料！
+        // 【高雄市熱門球場資料庫】包含排球、羽球、籃球
         const courtData = [
+            // === 籃球場 ===
             {
-                name: "大安森林公園籃球場",
-                type: "籃球",
-                city: "台北市",
-                address: "台北市大安區新生南路二段1號",
-                hasLight: true,
-                isFree: true
-            },
-            {
-                name: "中正運動中心羽球場",
-                type: "羽球",
-                city: "台北市",
-                address: "台北市中正區信義路一段1號",
-                hasLight: true,
-                isFree: false
-            },
-            {
-                name: "逢甲大學頂樓網球場",
-                type: "網球",
-                city: "台中市",
-                address: "台中市西屯區文華路100號",
-                hasLight: false,
-                isFree: false
-            },
-            {
-                name: "高雄中央公園籃球場",
+                name: "中央公園籃球場",
                 type: "籃球",
                 city: "高雄市",
                 address: "高雄市前金區中華三路6號",
@@ -292,99 +271,104 @@
                 isFree: true
             },
             {
-                name: "青埔運動公園網球場",
-                type: "網球",
-                city: "桃園市",
-                address: "桃園市中壢區文康路",
+                name: "中正技擊館青少年籃球場",
+                type: "籃球",
+                city: "高雄市",
+                address: "高雄市苓雅區中正一路96號",
                 hasLight: true,
                 isFree: true
             },
             {
-                name: "市民大道羽球場",
+                name: "凹子底森林公園籃球場",
+                type: "籃球",
+                city: "高雄市",
+                address: "高雄市鼓山區神農路",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "鳳山運動園區籃球場",
+                type: "籃球",
+                city: "高雄市",
+                address: "高雄市鳳山區體育路65號",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "楠梓運動坑口籃球場",
+                type: "籃球",
+                city: "高雄市",
+                address: "高雄市楠梓區旗楠路",
+                hasLight: true,
+                isFree: true
+            },
+
+            // === 羽球場 ===
+            {
+                name: "鳳山運動園區羽球館",
                 type: "羽球",
-                city: "台北市",
-                address: "台北市大安區市民大道三段",
-                hasLight: false,
+                city: "高雄市",
+                address: "高雄市鳳山區立志街180號",
+                hasLight: true,
+                isFree: false
+            },
+            {
+                name: "左營運動中心羽球場",
+                type: "羽球",
+                city: "高雄市",
+                address: "高雄市左營區世運大道100號",
+                hasLight: true,
+                isFree: false
+            },
+            {
+                name: "技擊館西區羽球場",
+                type: "羽球",
+                city: "高雄市",
+                address: "高雄市苓雅區中正一路96號",
+                hasLight: true,
+                isFree: false
+            },
+            {
+                name: "三民運動中心羽球館（陽明高架橋下）",
+                type: "羽球",
+                city: "高雄市",
+                address: "高雄市三民區陽明路",
+                hasLight: true,
+                isFree: true
+            },
+
+            // === 排球場 ===
+            {
+                name: "福誠高中排球場（露天多功能）",
+                type: "排球",
+                city: "高雄市",
+                address: "高雄市鳳山區五甲三路176號",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "高雄市中正高工排球場（戶外）",
+                type: "排球",
+                city: "高雄市",
+                address: "高雄市前鎮區光華二路101號",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "高師大和平校區排球場",
+                type: "排球",
+                city: "高雄市",
+                address: "高雄市苓雅區和平一路116號",
+                hasLight: true,
+                isFree: true
+            },
+            {
+                name: "中山大學排球場",
+                type: "排球",
+                city: "高雄市",
+                address: "高雄市鼓山區蓮海路70號",
+                hasLight: true,
                 isFree: true
             }
         ];
-
-        // 綁定 HTML 元素
-        const courtGrid = document.getElementById('courtGrid');
-        const searchNameInput = document.getElementById('searchName');
-        const filterTypeSelect = document.getElementById('filterType');
-        const filterLightSelect = document.getElementById('filterLight');
-
-        // 渲染畫面的函式
-        function renderCourts(courts) {
-            courtGrid.innerHTML = ""; 
-
-            if (courts.length === 0) {
-                courtGrid.innerHTML = `<div class="no-results">😢 找不到符合條件的球場，換個關鍵字試試看吧！</div>`;
-                return;
-            }
-
-            courts.forEach(court => {
-                // 自動產生 Google 地圖搜尋連結
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(court.name + ' ' + court.address)}`;
-                
-                const lightTag = court.hasLight ? '<span class="tag tag-light">💡 有夜間照明</span>' : '<span class="tag tag-no-light">🌙 無夜間照明</span>';
-                const freeTag = court.isFree ? '<span class="tag tag-free">🪙 免費入場</span>' : '<span class="tag tag-charge">💳 需收費/預約</span>';
-
-                const cardHtml = `
-                    <div class="court-card">
-                        <div class="court-body">
-                            <span class="court-type-badge">${court.type}</span>
-                            <div class="court-title">${court.name}</div>
-                            <div class="court-info">📍 <strong>地址：</strong>${court.address}</div>
-                            <div class="court-info">🏙️ <strong>城市：</strong>${court.city}</div>
-                            <div class="court-tags">
-                                ${lightTag}
-                                ${freeTag}
-                            </div>
-                            <a href="${mapUrl}" target="_blank" class="map-btn">🗺️ 開啟 Google 地圖導航</a>
-                        </div>
-                    </div>
-                `;
-                courtGrid.innerHTML += cardHtml;
-            });
-        }
-
-        // 篩選核心邏輯
-        function filterCourts() {
-            const searchText = searchNameInput.value.toLowerCase().trim();
-            const selectedType = filterTypeSelect.value;
-            const selectedLight = filterLightSelect.value;
-
-            const filtered = courtData.filter(court => {
-                // 1. 關鍵字比對名稱、地址或城市
-                const matchesSearch = court.name.toLowerCase().includes(searchText) || 
-                                      court.address.toLowerCase().includes(searchText) ||
-                                      court.city.toLowerCase().includes(searchText);
-                
-                // 2. 運動項目比對
-                const matchesType = (selectedType === 'all') || (court.type === selectedType);
-                
-                // 3. 燈光設備比對
-                let matchesLight = true;
-                if (selectedLight === 'yes') matchesLight = court.hasLight === true;
-                if (selectedLight === 'no') matchesLight = court.hasLight === false;
-
-                return matchesSearch && matchesType && matchesLight;
-            });
-
-            renderCourts(filtered);
-        }
-
-        // 監聽使用者操作
-        searchNameInput.addEventListener('input', filterCourts);
-        filterTypeSelect.addEventListener('change', filterCourts);
-        filterLightSelect.addEventListener('change', filterCourts);
-
-        // 網頁開啟時首次載入
-        window.onload = function() {
-            renderCourts(courtData);
-        };
-    </script>
-</body>
-</html>
+       
