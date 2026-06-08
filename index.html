@@ -269,8 +269,7 @@
             { name: "高雄市立鼓山高中-網球場", addr: "高雄市鼓山區明德路2號", type: "網球", light: "N", isSchool: true, mapQuery: "高雄市立鼓山高中" },
             { name: "高雄市立鼓山高中-地下室桌球室", addr: "高雄市鼓山區明德路2號", type: "桌球", light: "Y", isSchool: true, mapQuery: "高雄市立鼓山高中" },
 
-            // 🏀 === 籃球場 ===
-            { name: "中央公園戶外籃球場", addr: "高雄市前金區中華三路6號", type: "籃球", light: "Y", isSchool: false, mapQuery: "高雄中央公園籃球場" },
+            // 🏀 === 籃球場 === (已移除中央公園籃球場)
             { name: "中正技擊館青少年籃球場", addr: "高雄市苓雅區中正一路96號", type: "籃球", light: "Y", isSchool: false, mapQuery: "中正技擊館青少年籃球場" },
             { name: "凹子底森林公園籃球場", addr: "高雄市鼓山區神農路", type: "籃球", light: "Y", isSchool: false, mapQuery: "凹子底森林公園籃球場" },
             { name: "鳳山運動園區室外籃球場", addr: "高雄市鳳山區體育路65號", type: "籃球", light: "Y", isSchool: false, mapQuery: "鳳山運動園區室外籃球場" },
@@ -293,6 +292,7 @@
             { name: "美濃運動中心排球場", addr: "高雄市美濃區中正路", type: "排球", light: "N", isSchool: false, mapQuery: "美濃運動中心" },
 
             // 🎾 === 網球場 ===
+            { name: "民生網球場", addr: "高雄市新興區民生一路321號", type: "網球", light: "Y", isSchool: false, mapQuery: "高雄市民生網球場" },
             { name: "陽明網球場", addr: "高雄市三民區澄明街2號", type: "網球", light: "Y", isSchool: false, mapQuery: "陽明網球場" },
             { name: "中山網球場", addr: "高雄市新興區民生一路321號", type: "網球", light: "Y", isSchool: false, mapQuery: "高雄中山網球場" },
 
@@ -315,7 +315,7 @@
             }
 
             courts.forEach(court => {
-                // 完全修復：改用傳統、絕對不會出錯的網址字串拼接法
+                // ✨ 採用 Google Maps 最安全且通用的官方查詢網址 API 格式
                 var googleMapSearchUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(court.mapQuery);
                 
                 var lightTag = court.light === "Y" ? '<span class="tag tag-light">💡 有夜間照明</span>' : '<span class="tag tag-no-light">🌙 無夜間照明</span>';
